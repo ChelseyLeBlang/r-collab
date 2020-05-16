@@ -9,3 +9,31 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+library(tidyverse)
+library (here)
+library(janitor)
+library(paletteer) #installed
+```
+```{r}
+us_landings <- read_csv(here("data","noaa_landings.csv"), na ="no data") 
+```
+```{r}
+salmon_clean <- us_landings %>%
+  clean_names() %>% #makes headers snake case
+mutate(afs_name = str_to_lower(afs_name)
+       )%>% #make fish lowercase
+  filter(str_detect(afs_name, pattern = "salmon"))%>% #only salmon
+  separate(afs_name,into= c("group","subgroup"), sep=", ") %>% #separate subgroups
+  drop_na(dollars_usd) #drop any NA values in dollars_num
+
+```
+```{r}
+salmon_us_annual <- salmon_clean %>%
+  group_by(year,subgroup)%>%
+   summarise(tot_value = sum(dollars_usd, na.rm = TRUE))
+```
+```{r}
+salmon_us_annual <- salmon_clean %>% 
+  group_by(year, subgroup) %>% 
+```
