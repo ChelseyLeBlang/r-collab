@@ -23,17 +23,39 @@ salmon_clean <- us_landings %>%
   clean_names() %>% #makes headers snake case
 mutate(afs_name = str_to_lower(afs_name)
        )%>% #make fish lowercase
+   mutate(dollars_num = parse_number(dollars_usd)) %>% 
   filter(str_detect(afs_name, pattern = "salmon"))%>% #only salmon
-  separate(afs_name,into= c("group","subgroup"), sep=", ") %>% #separate subgroups
-  drop_na(dollars_usd) #drop any NA values in dollars_num
-
+  separate(afs_name,into= c("group","subgroup"), sep=", ")%>% #separate subgroups
+ drop_na(dollars_num)
+  
 ```
 ```{r}
 salmon_us_annual <- salmon_clean %>%
   group_by(year,subgroup)%>%
-   summarise(tot_value = sum(dollars_usd, na.rm = TRUE))
+   summarise(tot_value = sum(dollars_num, na.rm = TRUE))
 ```
 ```{r}
 salmon_us_annual <- salmon_clean %>% 
-  group_by(year, subgroup) %>% 
+  group_by(year, subgroup)
+```
+```{r}
+library(tidyverse)
+library (here)
+library(janitor)
+library(paletteer)
+```
+```{r}
+salmon_us_annual <- salmon_clean %>% 
+  group_by(year,subgroup)%>%
+  summarise(total_dollars= sum(dollars_num, na.rm=TRUE),)
+
+```
+```{r}
+salmon_gg <- ggplot(salmon_us_annual, aes(x=year,y=total_dollars, group=subgroup))+ geom_line(aes(color=subgroup))+theme_bw()+labs(x="year",y="US commercial salmon value (USD")+ scale_color_paletteer_d("ggthemes::Hue Circle")
+
+salmon_gg
+```
+```{r}
+library(kableExtra)
+kable(salmon_us_annual)
 ```
